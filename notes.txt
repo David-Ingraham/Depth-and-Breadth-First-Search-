@@ -1,0 +1,6 @@
+What is the relationship between depth and moving to the last valid item? And breath with moving to the first valid item?
+
+The que method fans out across the whole search space, but  
+
+
+Is slicing faster than pop(0)?, probably not its a matter of all the indexes being off and needing home 
