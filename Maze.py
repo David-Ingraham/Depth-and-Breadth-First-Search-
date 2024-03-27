@@ -34,13 +34,14 @@ class Position(NamedTuple):
 class Cell:
     ''' class that allows us to use Cell as a data type -- 
         row, column, & cell contents '''
-    __slots__ = ('_position', '_contents', '_parent')
+    __slots__ = ('_position', '_contents', '_parent', '_seen')
 
-    def __init__(self, row: int, col: int, contents: Contents, seen: bool)-> None:
+    def __init__(self, row: int, col: int, contents: Contents)-> None:
         self._position: Position = Position(row, col)
         self._contents: Contents = contents
         self._parent:   Cell     = None
-        self._seen: bool         = False
+        self._seen:     bool     = False
+        
 
     def __str__(self) -> str:
         contents = "[EMPTY]" if self._contents == Contents.EMPTY else self._contents
@@ -183,9 +184,19 @@ class Maze:
 
 
         
-        for cell in res:
-            if cell._seen == True | cell.isBlocked == True :
+        for cell in res: #checking for seen cells and blocked cells
+            if cell._seen == True or cell.isBlocked == True :
                 res.remove(cell)
+
+
+        for cell in res:
+            if cell._position.row < 0 or  cell._position.col < 0:
+                res.remove(cell)
+                ### above and below are bounds checks to see if we hit a wall
+        for cell in res:
+            if cell._position.row > self._num_rows or  cell._position.col < self._num_cols:
+                res.remove(cell)
+
 
 
         return res
@@ -193,20 +204,56 @@ class Maze:
 
     def depth_first_search(self) -> Cell | None:
         #adding cells to the stack in clockwise order, starting from upCell
-        #if cell is avalible and not seen, added to stack
         #last cell to be added is the chosen cell
         #the chosen cell's contents are updated to path and 
 
 
         stack = Stack()
+        stack.push(self._start) 
 
-        cells: list = Maze.getSearchLocations()
+        self._start._seen = True
+   
 
-        for cell in cells:
-            stack.push(cell)
+        while stack.is_empty==False: 
+            cell = stack.pop()
+
+
+            if cell.isGoal():
+                self.showPath(cell)
+
+
+            candidates: list[Cell] = self.getSearchLocations(cell)
+
+            for candidate in candidates:
+                stack.push(candidate)
+                candidate._parent = cell
+ 
+                candidate._seen=True
+                
+
+                #should return the cell that is the goal
+
+
+            return cell
+
+
+                
+
+       
+
+        """ for cell in self._grid:
+            candidates = self.getSearchLocations(cell)
+            for candidate in candidates:
+                stack.push(candidate)
+
+            next_cell = stack.pop()
+            next_cell._parent = cell"""
+
 
         
 
+        
+    
         
 
 
@@ -219,15 +266,15 @@ def main() -> None:
 
     #m = Maze(debug = True)
     
-    m = Maze(debug = True)
-    print(m)
+    m = Maze()
+    #print(m)
 
     m._grid[0][4]._parent = m._grid[0][3]
     m._grid[0][3]._parent = m._grid[0][2]
     m._grid[0][2]._parent = m._grid[0][1]
     m._grid[0][1]._parent = m._grid[0][0]
 
-    print(m.getSearchLocations(m._grid[0][1]))
+    #print(m.getSearchLocations(m._grid[0][1]))
     m._grid[0][0]._parent = m._grid[1][0]
     m._grid[1][0]._parent = m._grid[2][0]
     m._grid[2][0]._parent = m._grid[3][0]
@@ -236,10 +283,15 @@ def main() -> None:
 
 
     print()
-    m.showPath(m._goal)
+    #m.showPath(m._goal)
 
     print()
 
+
+
+    goal = m.depth_first_search()
+
+    m.showPath(goal)
 
 
 
@@ -277,6 +329,8 @@ def main() -> None:
     print(f"col for p3 is: {p3[1]}")
     print(f"p2 is: {p2}")
     '''
+
+    print(m.depth_first_search())
 
 
 if __name__ == "__main__":
